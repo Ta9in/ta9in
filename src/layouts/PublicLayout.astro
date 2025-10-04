@@ -1,0 +1,172 @@
+---
+const { pageTitle } = Astro.props;
+---
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width" />
+        <meta name="generator" content={Astro.generator} />
+        <title>{pageTitle}</title>
+        <style>
+            :root {
+                --bg: #ffffff;
+                --text: #0b0b0b;
+                --muted: #565656;
+                --accent: #111827;
+                --radius: 8px;
+                --max-width: 64ch; /* common comfortable measure for reading */
+            }
+
+            /* Page reset / minimal base */
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+                font-family:
+                    Inter,
+                    ui-sans-serif,
+                    system-ui,
+                    -apple-system,
+                    "Segoe UI",
+                    Roboto,
+                    "Helvetica Neue",
+                    Arial;
+                line-height: 1.6;
+                font-size: 16px;
+            }
+
+            /* The .site wrapper centers the page content vertically and horizontally.
+               .container constrains width to a readable measure and provides padding. */
+            .site {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 4vh 1rem;
+                box-sizing: border-box;
+            }
+
+            .container {
+                box-sizing: border-box;
+                max-width: var(--max-width);
+                width: 100%;
+                margin: 0 auto;
+                padding: 2.25rem 1rem;
+                background: transparent;
+            }
+
+            h1,
+            h2,
+            h3 {
+                margin: 0 0 0.5rem 0;
+                color: var(--accent);
+                font-weight: 600;
+                line-height: 1.15;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 0.75rem;
+            }
+
+            h2 {
+                font-size: 1.0625rem;
+                margin-top: 1.25rem;
+            }
+
+            h3 {
+                font-size: 0.95rem;
+                margin-top: 1rem;
+            }
+
+            p {
+                margin: 0 0 0.75rem 0;
+                color: var(--muted);
+                font-size: 0.98rem;
+            }
+
+            ul {
+                margin: 0.5rem 0 0.75rem 1.25rem;
+                color: var(--muted);
+                padding: 0;
+            }
+
+            li {
+                margin-bottom: 0.5rem;
+            }
+
+            /* Project images grid */
+            .project-images {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 0.75rem;
+                margin-top: 0.5rem;
+            }
+
+            .project-images img {
+                width: 100%;
+                height: auto;
+                display: block;
+                border-radius: var(--radius);
+                object-fit: cover;
+                border: 1px solid #e6e6e6;
+                box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+            }
+
+            /* Project cards grid (used on for-clients page) */
+            .project-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 1rem;
+                margin-top: 0.75rem;
+                align-items: start;
+            }
+
+            /* Ensure cards stretch to same height when possible */
+            .project-list .project-card {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            /* Subtle accessibility-focused focus styles */
+            a:focus,
+            button:focus {
+                outline: 2px solid #cbd5e1;
+                outline-offset: 2px;
+            }
+
+            /* Keep layout simple on small screens */
+            @media (max-width: 480px) {
+                .site {
+                    padding: 2vh 1rem;
+                }
+
+                .container {
+                    padding: 1.25rem 1rem;
+                }
+
+                h1 {
+                    font-size: 1.25rem;
+                }
+
+                /* Tighter card columns on very small screens */
+                .project-list {
+                    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                    gap: 0.75rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="site">
+            <div class="container"><slot /></div>
+        </div>
+    </body>
+</html>

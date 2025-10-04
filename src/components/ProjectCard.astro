@@ -1,0 +1,87 @@
+---
+const { title = "", description = "", href = "" } = Astro.props;
+---
+
+{
+    href ? (
+        <a class="project-card" href={href} role="article" aria-label={title}>
+            <div class="project-card__body">
+                <h3 class="project-card__title">{title}</h3>
+                {description && (
+                    <p class="project-card__description">{description}</p>
+                )}
+            </div>
+        </a>
+    ) : (
+        <article class="project-card" role="article" aria-label={title}>
+            <div class="project-card__body">
+                <h3 class="project-card__title">{title}</h3>
+                {description && (
+                    <p class="project-card__description">{description}</p>
+                )}
+            </div>
+        </article>
+    )
+}
+
+<style lang="css">
+    :root {
+        --card-bg: #fff;
+        --card-border: #e6e6e6;
+        --card-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --accent: #111827;
+        --muted: #565656;
+        --radius: 8px;
+    }
+
+    /* Card wrapper (applies to both <a> and <article>) */
+    .project-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--radius);
+        box-shadow: var(--card-shadow);
+        padding: 1rem;
+        display: flex;
+        align-items: flex-start;
+        transition:
+            transform 160ms ease,
+            box-shadow 160ms ease;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    /* Slight lift on hover/focus for affordance */
+    .project-card:hover,
+    .project-card:focus-within {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08);
+    }
+
+    /* Ensure anchor behaves like a block for layout */
+    .project-card[href] {
+        display: flex;
+    }
+
+    /* Title & description */
+    .project-card__title {
+        margin: 0 0 0.35rem 0;
+        color: var(--accent);
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .project-card__description {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.35;
+    }
+
+    /* Make sure card contents don't overflow */
+    .project-card__body {
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>

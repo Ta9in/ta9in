@@ -1,0 +1,267 @@
+---
+import { Image } from "astro:assets";
+import PublicLayout from "./PublicLayout.astro";
+import ProjectImages from "../components/ProjectImages.astro";
+
+const { frontmatter = {}, goBackHref = "/for-clients" } = Astro.props;
+
+/**
+ * Helpers to normalize frontmatter image data.
+ * Accepts:
+ * - frontmatter.image -> string or { url, alt }
+ * - frontmatter.images -> array of strings or objects
+ * - frontmatter.gallery -> array (alternative name)
+ */
+function normalizeImages(meta) {
+    // Prefer explicit arrays in frontmatter; if a single image is provided,
+    // wrap it in an array.
+    const list =
+        meta?.images ?? meta?.gallery ?? (meta?.image ? [meta.image] : []);
+    const rawList = (list || [])
+        .map((img) => {
+            if (!img) return null;
+            // normalize to use `src` as the input key so downstream resolution is consistent
+            if (typeof img === "string") return { src: img, alt: "" };
+            return {
+                src: img.url ?? img.src ?? img.path ?? "",
+                alt: img.alt ?? img.caption ?? "",
+            };
+        })
+        .filter(Boolean);
+
+    // Build a map of local assets in src/assets/projects so we can resolve
+    // frontmatter paths like '/assets/projects/.../file.png' to real module metadata.
+    // We use import.meta.glob with eager + as: 'metadata' so each entry includes width/height information.
+    const assetMap = import.meta.glob("../assets/projects/**", {
+        eager: true,
+        as: "metadata",
+    });
+
+    function resolveLocal(raw) {
+        // If the provided value isn't a string, return it as-is wrapped as { src }
+        if (!raw || typeof raw !== "string") return { src: raw };
+
+        // Normalize incoming path (strip leading slashes)
+        const target = raw.replace(/^\/+/, "");
+
+        // Prepare a normalized key list for comparisons
+        const keys = Object.keys(assetMap);
+        const normalizeKey = (k) => k.replace(/^(\.\/|\.\.\/)+/, "");
+
+        // 1) Try exact endsWith (most strict)
+        let match = keys.find((k) => normalizeKey(k).endsWith(target));
+
+        // 2) If not found, try includes (more flexible)
+        if (!match) {
+            match = keys.find((k) => normalizeKey(k).includes(target));
+        }
+
+        // 3) If still not found, try matching by filename only (basename)
+        if (!match) {
+            const targetName = target.split("/").pop();
+            if (targetName) {
+                match = keys.find((k) => normalizeKey(k).endsWith(targetName));
+            }
+        }
+
+        if (match) {
+            // assetMap[match] is expected to be metadata object: { src, width, height, format, ... } (because as: 'metadata')
+            const meta = (assetMap as any)[match];
+            if (!meta) return { src: raw };
+
+            // If the glob produced a plain URL string, return that as src
+            if (typeof meta === "string") {
+                return { src: meta };
+            }
+
+            // Return a metadata-like object with .src, width and height so <Image /> can use it directly
+            // If the metadata is missing a `format` field, attempt to infer it from the filename.
+            // This handles cases where asset metadata may not include format and prevents
+            // Astro's image service from receiving an undefined format.
+            const resolvedSrc = meta.src ?? meta?.default ?? raw;
+            let inferredFormat = meta.format ?? undefined;
+            if (!inferredFormat && typeof resolvedSrc === "string") {
+                // Strip query params (e.g., ?metadata) and fragment identifiers
+                const clean = resolvedSrc.split("?")[0].split("#")[0];
+                const match = clean.match(/\.([a-zA-Z0-9]+)$/);
+                if (match) {
+                    inferredFormat = match[1].toLowerCase();
+                    // Normalize common alias
+                    if (inferredFormat === "jpg") inferredFormat = "jpeg";
+                }
+            }
+            return {
+                src: resolvedSrc,
+                width: meta.width ?? undefined,
+                height: meta.height ?? undefined,
+                format: inferredFormat ?? undefined,
+            };
+        }
+
+        // Fallback to the original raw value wrapped as src
+        return { src: raw };
+    }
+
+    return rawList
+        .map((img) => {
+            if (!img) return null;
+            const resolved = resolveLocal(img.src);
+            // Return the resolved metadata (object) or the original string as `src`.
+            // This lets downstream components pass the metadata object directly to
+            // Astro's <Image /> component so width/height are known at build time.
+            return {
+                src: typeof resolved === "string" ? resolved : resolved,
+                alt: img.alt ?? "",
+            };
+        })
+        .filter(Boolean);
+}
+
+const images = normalizeImages(frontmatter);
+const title = frontmatter.title ?? "";
+const description = frontmatter.description ?? "";
+const client = frontmatter.client ?? "";
+const pubDate = frontmatter.pubDate
+    ? new Date(frontmatter.pubDate).toLocaleDateString()
+    : "";
+---
+
+<PublicLayout pageTitle={title || "Project"}>
+    <style>
+        :root {
+            --muted: #6b7280;
+            --accent: #0f172a;
+            --radius: 8px;
+            --layout-max-width: 80ch; /* slightly wider container */
+            --content-max-width: 72ch;
+        }
+
+        /* Center wrapper and container similar to the for-clients layout */
+        .site {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4vh 1rem;
+            box-sizing: border-box;
+        }
+
+        .container {
+            box-sizing: border-box;
+            max-width: var(--layout-max-width);
+            width: 100%;
+            margin: 0 auto;
+            padding: 2.25rem 1rem;
+            background: transparent;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: baseline;
+            margin: 0 0 1rem 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .project-body {
+            max-width: var(--content-max-width);
+            margin-top: 1rem;
+            color: #111827;
+            line-height: 1.6;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin: 0 0 1.25rem 0;
+            color: var(--accent);
+            text-decoration: none;
+            border-radius: 6px;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.95rem;
+            border: 1px solid transparent;
+        }
+
+        .back-link:focus,
+        .back-link:hover {
+            text-decoration: underline;
+            outline: none;
+        }
+
+        @media (max-width: 520px) {
+            .project-meta {
+                font-size: 0.88rem;
+            }
+
+            .site {
+                padding: 2vh 1rem;
+            }
+            .container {
+                padding: 1.25rem 1rem;
+            }
+        }
+
+        /* Keep a simple gallery style for backward compatibility in case CSS from component doesn't load */
+        .project-gallery,
+        .project-hero {
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid #e6e6e6;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+        }
+    </style>
+
+    <div class="site">
+        <div class="container">
+            <nav aria-label="Project navigation">
+                <a class="back-link" href={goBackHref} rel="noopener">
+                    ← Back
+                </a>
+            </nav>
+
+            <header>
+                <h1>{title}</h1>
+
+                <div
+                    class="project-meta"
+                    role="group"
+                    aria-label="Project information"
+                >
+                    {
+                        pubDate && (
+                            <div class="project-date">
+                                Published: <time>{pubDate}</time>
+                            </div>
+                        )
+                    }
+                    {
+                        client && (
+                            <div class="project-client">Client: {client}</div>
+                        )
+                    }
+                    {
+                        description && (
+                            <div
+                                class="project-desc"
+                                style="color:var(--muted)"
+                            >
+                                <em>{description}</em>
+                            </div>
+                        )
+                    }
+                </div>
+
+                {
+                    images.length > 0 && (
+                        <ProjectImages images={images} title={title} />
+                    )
+                }
+            </header>
+
+            <main class="project-body" id="content">
+                <slot />
+            </main>
+        </div>
+    </div>
+</PublicLayout>

@@ -1,0 +1,114 @@
+---
+import PublicLayout from "../layouts/PublicLayout.astro";
+import ProjectCard from "../components/ProjectCard.astro";
+
+const allProjects = Object.entries(
+    import.meta.glob("./projects/*.md*", { eager: true }),
+).map(([path, mod]) => {
+    // keep the path so we can derive a URL (href) for each project card
+    const module = (mod as any) ?? {};
+    return { path, ...module };
+}) as any[];
+
+const pageTitle = "For Clients";
+
+/**
+ * Safely normalize project metadata coming from markdown imports or other sources.
+ * Returns { title, description }.
+ */
+function normalizeProject(project: any) {
+    const meta = project?.frontmatter ?? project?.meta ?? project ?? {};
+    const title = meta?.title ?? meta?.name ?? "Untitled project";
+    const description = meta?.description ?? meta?.excerpt ?? "";
+    return { title, description };
+}
+---
+
+<PublicLayout pageTitle={pageTitle}>
+    <header aria-labelledby="page-title">
+        <h1 id="page-title">Taqin (تقن)</h1>
+        <p>
+            Taqin is an incubator for craftsmen. We provide apprenticeships for
+            new talent — developers, designers, marketers and more — allowing
+            them to work alongside our team of masters and experts to hone their
+            skills.
+        </p>
+        <p>
+            If you are a client with an idea or project, we will assign a
+            selected team to bring it to life.
+        </p>
+    </header>
+
+    <main>
+        <section id="process" aria-labelledby="process-heading">
+            <h2 id="process-heading">Our Process</h2>
+            <p>Typical steps we follow when starting a new engagement:</p>
+            <ul>
+                <li>
+                    Gather your idea, requirements, and any available specs.
+                </li>
+                <li>Prepare a concise proposal and scope.</li>
+                <li>Select a team and timeline.</li>
+                <li>Start development with regular checkpoints.</li>
+                <li>Iterate until the product meets your needs.</li>
+            </ul>
+            <p>You will receive the detailed plan after the proposal stage.</p>
+        </section>
+
+        <section id="team" aria-labelledby="team-heading">
+            <h2 id="team-heading">Our Team</h2>
+            <p>
+                We are officially a team of three apprentices who are actively
+                developing their skills. We also bring in additional members
+                from our network when needed.
+            </p>
+            <p>
+                Together we have over 30 years of combined experience in the
+                tech field — from writing small automation scripts to embedded
+                systems and production machinery.
+            </p>
+        </section>
+
+        <section id="projects" aria-labelledby="projects-heading">
+            <h2 id="projects-heading">Recent Projects</h2>
+            <p>
+                Although the team is relatively new, we have worked on several
+                interesting projects across different fields. Below are
+                highlights and a short gallery for one of our recent builds.
+            </p>
+
+            <!-- Grid of project cards (semantic list of articles) -->
+            <div class="project-list" role="list" aria-label="Projects list">
+                {
+                    allProjects.map((p) => {
+                        const { title, description } = normalizeProject(p);
+                        // derive a slug/url from the import path:
+                        // './projects/7abastore.mdx' -> '/projects/7abastore'
+                        const path = (p as any)?.path ?? "";
+                        const href = path
+                            ? path
+                                  .replace(/^\.\/projects\//, "/projects/")
+                                  .replace(/\.mdx?$/, "")
+                            : "/projects";
+                        return (
+                            <article role="listitem">
+                                <ProjectCard
+                                    title={title}
+                                    description={description}
+                                    href={href}
+                                />
+                            </article>
+                        );
+                    })
+                }
+            </div>
+        </section>
+    </main>
+
+    <footer aria-hidden="false">
+        <p style="margin:0; color:var(--muted); font-size:0.9rem;">
+            Interested in working with us? Contact us with your project brief
+            and we will reply with a proposed plan.
+        </p>
+    </footer>
+</PublicLayout>
