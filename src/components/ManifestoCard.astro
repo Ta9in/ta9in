@@ -1,0 +1,18 @@
+---
+interface Props {
+    number: string;
+    title: string;
+    href: string;
+}
+const { number, title, href } = Astro.props;
+---
+
+<a href={href} class="manifesto-card">
+    <span class="number">{number}.</span>
+    <span
+        class="title"
+        style={`view-transition-name: manifesto-title-${number};`}
+    >
+        {title}
+    </span>
+</a>

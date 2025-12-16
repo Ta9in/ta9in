@@ -1,59 +1,49 @@
 ---
-const pageTitle = "Home";
+import "../styles/global.css";
+import { ViewTransitions } from "astro:transitions";
+import { getCollection } from "astro:content";
+import ManifestoNav from "../components/ManifestoNav";
+import ManifestoContent from "../components/ManifestoContent";
+
+// Load manifesto content from collection
+const manifestoEntries = await getCollection("manifesto");
+const sortedEntries = manifestoEntries.sort((a, b) =>
+    a.data.number.localeCompare(b.data.number),
+);
+
+// Prepare data for SolidJS components
+const manifesto = sortedEntries.map((entry) => ({
+    number: entry.data.number,
+    title: entry.data.title,
+    content: entry.body,
+    illustration: entry.data.illustration,
+}));
+
+const navItems = sortedEntries.map((entry) => ({
+    number: entry.data.number,
+    title: entry.data.title,
+    slug: entry.id,
+}));
 ---
 
-<style global>
-    html,
-    body {
-        height: 100%;
-        margin: 0;
-    }
-
-    .full-viewport {
-        min-height: 100vh;
-        width: 100vw;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: white;
-    }
-
-    .logo {
-        max-width: 60vmin;
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-</style>
-
-<main class="full-viewport" aria-label="Ta9in home">
-    <!-- Inline SVG logo centered in the viewport -->
-    <svg
-        class="logo"
-        width="1776"
-        height="1166"
-        viewBox="0 0 1776 1166"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-label="Ta9in logo"
-    >
-        <path
-            d="M888.5 277C1133.99 277 1333 476.009 1333 721.5C1333 826.935 1296.29 923.796 1234.96 1000H1333V1166H278V1000H542.045C480.71 923.796 444 826.935 444 721.5C444 476.009 643.009 277 888.5 277ZM888.5 445C735.241 445 611 569.241 611 722.5C611 875.759 735.241 1000 888.5 1000C1041.76 1000 1166 875.759 1166 722.5C1166 569.241 1041.76 445 888.5 445Z"
-            fill="black"></path>
-        <path
-            d="M1776 1082.5L1693.5 1000L1611 1082.5L1693.5 1165.5L1776 1082.5Z"
-            fill="black"></path>
-        <path
-            d="M1054 82.5L971.5 0L889 82.5L971.5 165.5L1054 82.5Z"
-            fill="black"></path>
-        <path
-            d="M165 1082.5L82.5 1000L0 1082.5L82.5 1165.5L165 1082.5Z"
-            fill="black"></path>
-        <path
-            d="M1609 1082.5L1526.5 1000L1444 1082.5L1526.5 1165.5L1609 1082.5Z"
-            fill="black"></path>
-        <path d="M887 82.5L804.5 0L722 82.5L804.5 165.5L887 82.5Z" fill="black"
-        ></path>
-    </svg>
-</main>
+<!doctype html>
+<html lang="ar" dir="rtl">
+    <head>
+        <meta charset="utf-8" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="generator" content={Astro.generator} />
+        <meta
+            name="description"
+            content="تَقِن: مَنْبَتُ المَهَرَة، ودَارُ المُلازَمَة. نجمعُ النَّشْءَ بالأَسَاطِين، لِيَرِثوا سِرَّ الصَّنْعَة."
+        />
+        <title>تَقِن | الإشارات</title>
+        <ViewTransitions />
+    </head>
+    <body>
+        <div class="home-layout">
+            <ManifestoNav client:load items={navItems} />
+            <ManifestoContent client:load items={manifesto} />
+        </div>
+    </body>
+</html>
