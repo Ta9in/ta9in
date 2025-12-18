@@ -66,7 +66,7 @@ export default function ManifestoContent(props: Props) {
                             </div>
 
                             <div
-                                class="signal-illustration"
+                                class={`signal-illustration ${!item.illustration ? 'has-placeholder' : ''}`}
                                 style={`view-transition-name: illustration-${item.number};`}
                             >
                                 <Show
