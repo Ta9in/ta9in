@@ -4,7 +4,7 @@ import { ViewTransitions } from "astro:transitions";
 import { getCollection } from "astro:content";
 import ManifestoNav from "../components/ManifestoNav";
 import ManifestoContent from "../components/ManifestoContent";
-
+import TopBar from "../components/TopBar";
 // Load manifesto content from collection
 const manifestoEntries = await getCollection("manifesto");
 const sortedEntries = manifestoEntries.sort((a, b) =>
@@ -37,13 +37,16 @@ const navItems = sortedEntries.map((entry) => ({
             name="description"
             content="تَقِن: مَنْبَتُ المَهَرَة، ودَارُ المُلازَمَة. نجمعُ النَّشْءَ بالأَسَاطِين، لِيَرِثوا سِرَّ الصَّنْعَة."
         />
-        <title>تَقِن | الإشارات</title>
+        <title>تَقِن: مَنْبَتُ المَهَرَة، ودَارُ المُلازَمَة</title>
         <ViewTransitions />
     </head>
     <body>
         <div class="home-layout">
             <ManifestoNav client:load items={navItems} />
-            <ManifestoContent client:load items={manifesto} />
+            <div class="content-wrapper">
+                <TopBar />
+                <ManifestoContent client:load items={manifesto} />
+            </div>
         </div>
     </body>
 </html>
