@@ -1,25 +1,55 @@
 ---
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
 import "../styles/global.css";
-const { pageTitle } = Astro.props;
+
+interface Props {
+    pageTitle: string;
+    description?: string;
+    lang?: string;
+    dir?: string;
+    viewport?: string;
+    bodyClass?: string;
+}
+
+const {
+    pageTitle,
+    description,
+    lang = "en",
+    dir = "ltr",
+    viewport = "width=device-width",
+    bodyClass = "",
+} = Astro.props;
+
+// Get Google Analytics ID from environment variable
+const gaId = import.meta.env.PUBLIC_GOOGLE_ANALYTICS_ID;
 ---
 
-<html lang="en">
+<!doctype html>
+<html lang={lang} dir={dir}>
     <head>
         <meta charset="utf-8" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <meta name="viewport" content="width=device-width" />
+        <meta name="viewport" content={viewport} />
         <meta name="generator" content={Astro.generator} />
+        {description && <meta name="description" content={description} />}
         <title>{pageTitle}</title>
+        
+        {gaId && (
+            <>
+                <!-- Google Analytics -->
+                <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+                <script is:inline define:vars={{ gaId }}>
+                    window.dataLayer = window.dataLayer || [];
+                    function gtag(){dataLayer.push(arguments);}
+                    gtag('js', new Date());
+                    gtag('config', gaId);
+                </script>
+            </>
+        )}
+        
+        <!-- Allow child layouts to inject additional head content -->
+        <slot name="head" />
     </head>
-    <body>
-        <Header />
-        <h1>{pageTitle}</h1>
+    <body class={bodyClass}>
         <slot />
-        <Footer />
-        <script>
-            import "../scripts/menu.js";
-        </script>
     </body>
 </html>
